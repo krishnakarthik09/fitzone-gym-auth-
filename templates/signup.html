@@ -1,0 +1,65 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>Sign Up — FitZone</title>
+<style>
+  :root{
+    --bg: #0a0a0d;
+    --panel: #16161c;
+    --line: #26262e;
+    --lime: #d4ff3f;
+    --text: #f1f1ee;
+    --text-dim: #8a8a92;
+    --danger: #ff5d5d;
+  }
+  *{margin:0;padding:0;box-sizing:border-box;}
+  body{
+    background:var(--bg); color:var(--text);
+    font-family:'Space Grotesk','Inter',system-ui,sans-serif;
+    min-height:100vh; display:flex; align-items:center; justify-content:center;
+  }
+  .auth-card{
+    background:var(--panel); border:1px solid var(--line); border-radius:6px;
+    padding:48px 40px; width:100%; max-width:380px;
+  }
+  .logo{font-family:'Archivo Black',sans-serif; font-size:1.3rem; margin-bottom:6px;}
+  .logo span{color:var(--lime);}
+  h2{font-size:1.5rem; margin:18px 0 28px; font-weight:700;}
+  label{font-size:0.82rem; color:var(--text-dim); display:block; margin-bottom:6px;}
+  input{
+    width:100%; background:#0e0e12; border:1px solid var(--line); color:var(--text);
+    padding:12px 14px; border-radius:4px; font-size:0.95rem; margin-bottom:18px;
+  }
+  input:focus{outline:none; border-color:var(--lime);}
+  button{
+    width:100%; background:var(--lime); color:#0a0a0d; border:none;
+    padding:14px; font-weight:700; font-size:0.95rem; border-radius:4px;
+    cursor:pointer; transition:transform 0.2s;
+  }
+  button:hover{transform:translateY(-2px);}
+  .switch{margin-top:20px; font-size:0.85rem; color:var(--text-dim); text-align:center;}
+  .switch a{color:var(--lime); text-decoration:none;}
+  .back{display:inline-block; margin-bottom:18px; color:var(--text-dim); font-size:0.82rem; text-decoration:none;}
+  .back:hover{color:var(--text);}
+  .error{color:var(--danger); font-size:0.85rem; margin-bottom:16px;}
+</style>
+</head>
+<body>
+  <div class="auth-card">
+    <a href="/" class="back">← Back to Home</a>
+    <div class="logo">FIT<span>ZONE</span></div>
+    <h2>Create your account</h2>
+    {% if error %}<div class="error">{{ error }}</div>{% endif %}
+    <form method="POST">
+      <label>Username</label>
+      <input type="text" name="username" required>
+      <label>Password</label>
+      <input type="password" name="password" required>
+      <button type="submit">Sign Up</button>
+    </form>
+    <div class="switch">Already a member? <a href="/login">Log in</a></div>
+  </div>
+</body>
+</html>

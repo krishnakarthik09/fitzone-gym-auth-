@@ -1,0 +1,479 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>FitZone — Train Different</title>
+<style>
+  :root{
+    --bg: #0a0a0d;
+    --bg-soft: #121216;
+    --panel: #16161c;
+    --line: #26262e;
+    --lime: #d4ff3f;
+    --lime-dim: #9bbf2c;
+    --text: #f1f1ee;
+    --text-dim: #8a8a92;
+    --danger: #ff5d5d;
+  }
+  *{margin:0;padding:0;box-sizing:border-box;}
+  html{scroll-behavior:smooth;}
+  body{
+    background:var(--bg);
+    color:var(--text);
+    font-family:'Space Grotesk', 'Inter', system-ui, sans-serif;
+    overflow-x:hidden;
+  }
+  @media (prefers-reduced-motion: reduce){
+    *{animation-duration:0.001ms !important; animation-iteration-count:1 !important; transition-duration:0.001ms !important;}
+  }
+
+  /* ---------- Type ---------- */
+  h1,h2,h3{font-family:'Archivo Black','Space Grotesk',sans-serif; letter-spacing:-0.02em; line-height:1.02;}
+  .eyebrow{
+    font-size:0.72rem; letter-spacing:0.28em; text-transform:uppercase;
+    color:var(--lime); font-weight:600;
+  }
+  .mono{font-family:'JetBrains Mono', monospace;}
+
+  /* ---------- Nav ---------- */
+  nav{
+    position:fixed; top:0; left:0; right:0; z-index:100;
+    display:flex; align-items:center; justify-content:space-between;
+    padding:22px 5vw;
+    background:linear-gradient(to bottom, rgba(10,10,13,0.92), transparent);
+    backdrop-filter:blur(6px);
+  }
+  .logo{font-family:'Archivo Black',sans-serif; font-size:1.3rem; letter-spacing:-0.02em;}
+  .logo span{color:var(--lime);}
+  .nav-links{display:flex; gap:36px; align-items:center;}
+  .nav-links a{
+    color:var(--text-dim); text-decoration:none; font-size:0.88rem; font-weight:500;
+    transition:color 0.2s;
+  }
+  .nav-links a:hover{color:var(--text);}
+  .nav-cta{
+    background:var(--lime); color:#0a0a0d; border:none; padding:10px 22px;
+    border-radius:2px; font-weight:700; font-size:0.85rem; cursor:pointer;
+    transition:transform 0.2s, box-shadow 0.2s;
+  }
+  .nav-cta:hover{transform:translateY(-2px); box-shadow:0 6px 20px rgba(212,255,63,0.25);}
+  .nav-cta:focus-visible, a:focus-visible, button:focus-visible, input:focus-visible{
+    outline:2px solid var(--lime); outline-offset:3px;
+  }
+
+  /* ---------- Hero ---------- */
+  .hero{
+    position:relative;
+    min-height:100vh;
+    display:flex; align-items:center;
+    padding:0 5vw;
+    overflow:hidden;
+  }
+  #dumbbell-canvas{
+    position:absolute; top:0; right:0; width:60%; height:100%;
+    opacity:0; transition:opacity 1.2s ease;
+  }
+  #dumbbell-canvas.loaded{opacity:1;}
+  .hero-grid{
+    position:absolute; inset:0;
+    background-image:
+      linear-gradient(rgba(212,255,63,0.035) 1px, transparent 1px),
+      linear-gradient(90deg, rgba(212,255,63,0.035) 1px, transparent 1px);
+    background-size:48px 48px;
+    mask-image:radial-gradient(ellipse 70% 60% at 30% 40%, black 40%, transparent 80%);
+    pointer-events:none;
+  }
+  .hero-content{
+    position:relative; z-index:2; max-width:640px; padding-top:80px;
+  }
+  .hero-content h1{
+    font-size:clamp(3rem, 7vw, 5.4rem);
+    margin:18px 0 22px;
+  }
+  .hero-content h1 .accent{color:var(--lime);}
+  .hero-sub{
+    font-size:1.05rem; color:var(--text-dim); max-width:460px; margin-bottom:36px; line-height:1.6;
+  }
+  .hero-actions{display:flex; gap:16px; flex-wrap:wrap;}
+  .btn-primary{
+    background:var(--lime); color:#0a0a0d; border:none; padding:16px 32px;
+    font-weight:700; font-size:0.95rem; border-radius:2px; cursor:pointer;
+    transition:transform 0.2s, box-shadow 0.2s;
+  }
+  .btn-primary:hover{transform:translateY(-3px); box-shadow:0 10px 30px rgba(212,255,63,0.3);}
+  .btn-ghost{
+    background:transparent; color:var(--text); border:1px solid var(--line); padding:16px 32px;
+    font-weight:600; font-size:0.95rem; border-radius:2px; cursor:pointer; transition:border-color 0.2s, background 0.2s;
+  }
+  .btn-ghost:hover{border-color:var(--lime); background:rgba(212,255,63,0.05);}
+  .hero-meta{
+    display:flex; gap:40px; margin-top:64px; padding-top:28px; border-top:1px solid var(--line);
+    max-width:480px;
+  }
+  .hero-meta .stat-num{font-family:'Archivo Black',sans-serif; font-size:1.6rem; color:var(--lime);}
+  .hero-meta .stat-label{font-size:0.78rem; color:var(--text-dim); margin-top:4px;}
+  .drag-hint{
+    position:absolute; bottom:36px; right:6vw; z-index:2;
+    font-size:0.72rem; letter-spacing:0.15em; text-transform:uppercase; color:var(--text-dim);
+    display:flex; align-items:center; gap:8px;
+  }
+  .drag-hint::before{content:''; width:28px; height:1px; background:var(--text-dim);}
+
+  /* ---------- Section shared ---------- */
+  section{padding:120px 5vw;}
+  .section-head{max-width:640px; margin-bottom:64px;}
+  .section-head h2{font-size:clamp(2.2rem, 4vw, 3.2rem); margin-top:14px;}
+  .section-head p{color:var(--text-dim); margin-top:16px; font-size:1.02rem; line-height:1.6;}
+
+  /* ---------- Programs ---------- */
+  .programs{background:var(--bg-soft); border-top:1px solid var(--line); border-bottom:1px solid var(--line);}
+  .program-grid{display:grid; grid-template-columns:repeat(3,1fr); gap:1px; background:var(--line);}
+  .program-card{
+    background:var(--bg-soft); padding:40px 32px; position:relative; overflow:hidden;
+    transition:background 0.3s;
+  }
+  .program-card:hover{background:#1a1a20;}
+  .program-card .tag{font-size:0.7rem; color:var(--lime); letter-spacing:0.15em; text-transform:uppercase;}
+  .program-card h3{font-size:1.5rem; margin:16px 0 12px; font-family:'Space Grotesk',sans-serif; font-weight:700;}
+  .program-card p{color:var(--text-dim); font-size:0.92rem; line-height:1.55;}
+  .program-card .icon{
+    width:42px; height:42px; margin-bottom:18px;
+    stroke:var(--lime); fill:none; stroke-width:1.6;
+  }
+
+  /* ---------- Plans ---------- */
+  .plans-grid{display:grid; grid-template-columns:repeat(3,1fr); gap:24px;}
+  .plan-card{
+    border:1px solid var(--line); padding:40px 32px; border-radius:4px; position:relative;
+    transition:border-color 0.3s, transform 0.3s;
+  }
+  .plan-card:hover{transform:translateY(-6px); border-color:#3a3a44;}
+  .plan-card.featured{border-color:var(--lime); background:linear-gradient(180deg, rgba(212,255,63,0.06), transparent);}
+  .plan-card.featured::before{
+    content:'MOST POPULAR'; position:absolute; top:-1px; right:24px;
+    background:var(--lime); color:#0a0a0d; font-size:0.65rem; font-weight:800;
+    padding:5px 10px; letter-spacing:0.08em;
+  }
+  .plan-name{font-size:0.85rem; color:var(--text-dim); letter-spacing:0.1em; text-transform:uppercase;}
+  .plan-price{font-family:'Archivo Black',sans-serif; font-size:2.6rem; margin:14px 0 4px;}
+  .plan-price span{font-size:1rem; color:var(--text-dim); font-family:'Space Grotesk',sans-serif; font-weight:400;}
+  .plan-features{list-style:none; margin:28px 0 32px; display:flex; flex-direction:column; gap:12px;}
+  .plan-features li{font-size:0.9rem; color:var(--text-dim); display:flex; gap:10px; align-items:baseline;}
+  .plan-features li::before{content:'+'; color:var(--lime); font-weight:700;}
+  .plan-card .btn-ghost, .plan-card .btn-primary{width:100%; text-align:center;}
+
+  /* ---------- Final CTA ---------- */
+  .final-cta{
+    text-align:center; padding:140px 5vw; position:relative; overflow:hidden;
+  }
+  .final-cta::before{
+    content:''; position:absolute; top:50%; left:50%; width:600px; height:600px;
+    background:radial-gradient(circle, rgba(212,255,63,0.08), transparent 70%);
+    transform:translate(-50%,-50%); pointer-events:none;
+  }
+  .final-cta h2{font-size:clamp(2.4rem, 6vw, 4rem); position:relative; z-index:1;}
+  .final-cta p{color:var(--text-dim); margin:18px 0 36px; font-size:1.05rem; position:relative; z-index:1;}
+  .btn-membership{
+    position:relative; z-index:1;
+    background:var(--lime); color:#0a0a0d; border:none; padding:20px 48px;
+    font-weight:800; font-size:1.05rem; border-radius:2px; cursor:pointer;
+    text-decoration:none; display:inline-block;
+    transition:transform 0.2s, box-shadow 0.2s;
+  }
+  .btn-membership:hover{transform:translateY(-4px) scale(1.02); box-shadow:0 16px 40px rgba(212,255,63,0.35);}
+
+  footer{
+    border-top:1px solid var(--line); padding:32px 5vw; display:flex; justify-content:space-between;
+    color:var(--text-dim); font-size:0.82rem; flex-wrap:wrap; gap:12px;
+  }
+
+  @media (max-width: 900px){
+    .program-grid, .plans-grid{grid-template-columns:1fr;}
+    #dumbbell-canvas{width:100%; opacity:0.35;}
+    .nav-links{display:none;}
+    .hero-meta{gap:24px;}
+    section{padding:80px 5vw;}
+  }
+</style>
+</head>
+<body>
+
+<nav>
+  <div class="logo">FIT<span>ZONE</span></div>
+  <div class="nav-links">
+    <a href="/">Home</a>
+    <a href="#programs">Programs</a>
+    <a href="#plans">Plans</a>
+  </div>
+  <div style="display:flex; gap:14px; align-items:center;">
+    {% if current_user.is_authenticated %}
+      <span style="color:var(--text-dim); font-size:0.85rem;">Hi, {{ current_user.username }}</span>
+      <a class="nav-cta" href="/logout" style="text-decoration:none; display:inline-block;">Logout</a>
+    {% else %}
+      <a class="btn-ghost" href="/login" style="text-decoration:none; display:inline-block; padding:10px 22px; font-size:0.85rem;">Login</a>
+      <a class="nav-cta" href="/signup" style="text-decoration:none; display:inline-block;">Join Now</a>
+    {% endif %}
+  </div>
+</nav>
+
+<section class="hero">
+  <div class="hero-grid"></div>
+  <canvas id="dumbbell-canvas"></canvas>
+  <div class="hero-content">
+    <div class="eyebrow">Strength training · Hyderabad</div>
+    <h1>Lift more.<br>Become <span class="accent">unbreakable</span>.</h1>
+    <p class="hero-sub">FitZone is a no-excuses training floor for people who want real progress — structured programs, certified coaches, and a community that shows up.</p>
+    <div class="hero-actions">
+      <button class="btn-primary" onclick="document.getElementById('plans').scrollIntoView({behavior:'smooth'})">View Plans</button>
+    </div>
+    <div class="hero-meta">
+      <div><div class="stat-num">1,200+</div><div class="stat-label">Active members</div></div>
+      <div><div class="stat-num">14</div><div class="stat-label">Weekly classes</div></div>
+      <div><div class="stat-num">4.9★</div><div class="stat-label">Member rating</div></div>
+    </div>
+  </div>
+  <div class="drag-hint">Drag to rotate</div>
+</section>
+
+<section class="programs" id="programs">
+  <div class="section-head">
+    <div class="eyebrow">What we train</div>
+    <h2>Three ways in.</h2>
+    <p>Every program shares the same floor and the same coaches — pick the entry point that matches where you are right now.</p>
+  </div>
+  <div class="program-grid">
+    <div class="program-card">
+      <svg class="icon" viewBox="0 0 24 24"><path d="M6 7v10M2 9v6M18 7v10M22 9v6M6 12h12" stroke-linecap="round"/></svg>
+      <div class="tag">Strength</div>
+      <h3>Barbell Foundations</h3>
+      <p>Squat, bench, deadlift — built from the ground up with form-first coaching for total beginners and rusty lifters alike.</p>
+    </div>
+    <div class="program-card">
+      <svg class="icon" viewBox="0 0 24 24"><path d="M12 2l3 7h7l-5.5 4.5L18 21l-6-4-6 4 1.5-7.5L2 9h7z" stroke-linejoin="round"/></svg>
+      <div class="tag">Conditioning</div>
+      <h3>Metabolic Circuits</h3>
+      <p>High-output interval sessions mixing kettlebells, rowers, and bodyweight work. Built to burn, not just to sweat.</p>
+    </div>
+    <div class="program-card">
+      <svg class="icon" viewBox="0 0 24 24"><circle cx="12" cy="12" r="9"/><path d="M12 7v5l3 3"/></svg>
+      <div class="tag">Recovery</div>
+      <h3>Mobility & Reset</h3>
+      <p>Guided stretching, breathwork, and joint care sessions so the rest of your training actually holds up long-term.</p>
+    </div>
+  </div>
+</section>
+
+<section id="plans">
+  <div class="section-head">
+    <div class="eyebrow">Membership</div>
+    <h2>Pick your plan.</h2>
+    <p>Simple pricing, no lock-in contracts. Upgrade or cancel anytime from your account.</p>
+  </div>
+  <div class="plans-grid">
+    <div class="plan-card">
+      <div class="plan-name">Starter</div>
+      <div class="plan-price">₹999<span>/mo</span></div>
+      <ul class="plan-features">
+        <li>Gym floor access</li>
+        <li>2 group classes / week</li>
+        <li>Locker access</li>
+      </ul>
+      {% if current_user.is_authenticated %}
+        <a class="btn-ghost" href="https://natural-wavy-tank.anvil.app" target="_blank" rel="noopener" style="text-decoration:none; text-align:center; display:block;">Choose Starter</a>
+      {% else %}
+        <a class="btn-ghost" href="/signup" style="text-decoration:none; text-align:center; display:block;">Choose Starter</a>
+      {% endif %}
+    </div>
+    <div class="plan-card featured">
+      <div class="plan-name">Pro</div>
+      <div class="plan-price">₹1,799<span>/mo</span></div>
+      <ul class="plan-features">
+        <li>Unlimited gym floor access</li>
+        <li>Unlimited group classes</li>
+        <li>1 PT session / month</li>
+        <li>Progress tracking app</li>
+      </ul>
+      {% if current_user.is_authenticated %}
+        <a class="btn-primary" href="https://natural-wavy-tank.anvil.app" target="_blank" rel="noopener" style="text-decoration:none; text-align:center; display:block;">Choose Pro</a>
+      {% else %}
+        <a class="btn-primary" href="/signup" style="text-decoration:none; text-align:center; display:block;">Choose Pro</a>
+      {% endif %}
+    </div>
+    <div class="plan-card">
+      <div class="plan-name">Elite</div>
+      <div class="plan-price">₹2,999<span>/mo</span></div>
+      <ul class="plan-features">
+        <li>Everything in Pro</li>
+        <li>4 PT sessions / month</li>
+        <li>Nutrition coaching</li>
+        <li>Priority booking</li>
+      </ul>
+      {% if current_user.is_authenticated %}
+        <a class="btn-ghost" href="https://natural-wavy-tank.anvil.app" target="_blank" rel="noopener" style="text-decoration:none; text-align:center; display:block;">Choose Elite</a>
+      {% else %}
+        <a class="btn-ghost" href="/signup" style="text-decoration:none; text-align:center; display:block;">Choose Elite</a>
+      {% endif %}
+    </div>
+  </div>
+</section>
+
+<section class="final-cta">
+  <h2>Ready to start?</h2>
+  <p>Your membership, schedule, and payments are all managed in the FitZone app.</p>
+  {% if current_user.is_authenticated %}
+    <a href="https://natural-wavy-tank.anvil.app" class="btn-membership" id="membership-link" target="_blank" rel="noopener">Get Membership →</a>
+  {% else %}
+    <p style="margin-top:0; color:var(--lime); font-size:0.95rem; font-weight:600;">
+      <a href="/signup" style="color:var(--lime); text-decoration:none;">Sign up</a> or <a href="/login" style="color:var(--lime); text-decoration:none;">log in</a> to get your membership.
+    </p>
+  {% endif %}
+</section>
+
+<footer>
+  <div>© 2026 FitZone Gym. Built by Krishna Karthik.</div>
+  <div>Hyderabad, India</div>
+</footer>
+
+<script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
+<script>
+  /* ---------------- 3D Dumbbell (Three.js) ---------------- */
+  (function(){
+    const canvas = document.getElementById('dumbbell-canvas');
+    const renderer = new THREE.WebGLRenderer({canvas, alpha:true, antialias:true});
+    const scene = new THREE.Scene();
+    const camera = new THREE.PerspectiveCamera(40, 1, 0.1, 100);
+    camera.position.set(0, 0, 9);
+
+    function resize(){
+      const w = canvas.clientWidth || canvas.parentElement.clientWidth;
+      const h = canvas.clientHeight || window.innerHeight;
+      renderer.setSize(w, h, false);
+      camera.aspect = w/h;
+      camera.updateProjectionMatrix();
+    }
+
+    // Lights
+    scene.add(new THREE.AmbientLight(0x404040, 1.2));
+    const key = new THREE.PointLight(0xd4ff3f, 2.2, 30);
+    key.position.set(5, 4, 6);
+    scene.add(key);
+    const rim = new THREE.PointLight(0x6680ff, 1.0, 30);
+    rim.position.set(-6, -3, -4);
+    scene.add(rim);
+    const fill = new THREE.DirectionalLight(0xffffff, 0.5);
+    fill.position.set(-3, 5, 3);
+    scene.add(fill);
+
+    // Dumbbell group
+    const dumbbell = new THREE.Group();
+    const metal = new THREE.MeshStandardMaterial({color:0x2a2a30, metalness:0.85, roughness:0.25});
+    const plateMat = new THREE.MeshStandardMaterial({color:0x1a1a1e, metalness:0.6, roughness:0.4});
+    const accentMat = new THREE.MeshStandardMaterial({color:0xd4ff3f, metalness:0.3, roughness:0.4, emissive:0xd4ff3f, emissiveIntensity:0.15});
+
+    // Handle (bar)
+    const bar = new THREE.Mesh(new THREE.CylinderGeometry(0.22, 0.22, 4.2, 32), metal);
+    bar.rotation.z = Math.PI/2;
+    dumbbell.add(bar);
+
+    // Grip texture rings
+    for(let i=-1; i<=1; i++){
+      const grip = new THREE.Mesh(new THREE.TorusGeometry(0.24, 0.04, 8, 24), accentMat);
+      grip.rotation.y = Math.PI/2;
+      grip.position.x = i * 0.35;
+      dumbbell.add(grip);
+    }
+
+    // Plates (each side: 2 plates of different size)
+    function makePlateSet(xPos, dir){
+      const sizes = [
+        {r:1.15, d:0.32, x:0.55},
+        {r:0.85, d:0.26, x:0.95}
+      ];
+      sizes.forEach(s => {
+        const plate = new THREE.Mesh(new THREE.CylinderGeometry(s.r, s.r, s.d, 48), plateMat);
+        plate.rotation.z = Math.PI/2;
+        plate.position.x = xPos + dir * s.x;
+        dumbbell.add(plate);
+        // accent ring on outer face
+        const ring = new THREE.Mesh(new THREE.TorusGeometry(s.r*0.7, 0.025, 8, 32), accentMat);
+        ring.rotation.y = Math.PI/2;
+        ring.position.x = xPos + dir * (s.x + s.d/2 + 0.001);
+        dumbbell.add(ring);
+      });
+      // collar
+      const collar = new THREE.Mesh(new THREE.CylinderGeometry(0.28, 0.28, 0.15, 24), metal);
+      collar.rotation.z = Math.PI/2;
+      collar.position.x = xPos + dir * 1.55;
+      dumbbell.add(collar);
+    }
+    makePlateSet(0, -1);
+    makePlateSet(0, 1);
+
+    dumbbell.scale.set(1.15,1.15,1.15);
+    scene.add(dumbbell);
+
+    // Floating particles for atmosphere
+    const particleGeo = new THREE.BufferGeometry();
+    const count = 80;
+    const positions = new Float32Array(count*3);
+    for(let i=0;i<count;i++){
+      positions[i*3] = (Math.random()-0.5)*14;
+      positions[i*3+1] = (Math.random()-0.5)*10;
+      positions[i*3+2] = (Math.random()-0.5)*8 - 2;
+    }
+    particleGeo.setAttribute('position', new THREE.BufferAttribute(positions,3));
+    const particleMat = new THREE.PointsMaterial({color:0xd4ff3f, size:0.025, transparent:true, opacity:0.5});
+    const particles = new THREE.Points(particleGeo, particleMat);
+    scene.add(particles);
+
+    // Interaction: drag to rotate, auto-spin otherwise
+    let targetRotY = 0.4, targetRotX = -0.15;
+    let currentRotY = targetRotY, currentRotX = targetRotX;
+    let isDragging = false, lastX = 0, lastY = 0;
+    let autoSpin = true;
+
+    function pointerDown(x,y){ isDragging = true; autoSpin = false; lastX = x; lastY = y; }
+    function pointerMove(x,y){
+      if(!isDragging) return;
+      const dx = x - lastX, dy = y - lastY;
+      targetRotY += dx * 0.005;
+      targetRotX += dy * 0.005;
+      targetRotX = Math.max(-0.9, Math.min(0.9, targetRotX));
+      lastX = x; lastY = y;
+    }
+    function pointerUp(){ isDragging = false; }
+
+    canvas.addEventListener('mousedown', e => pointerDown(e.clientX, e.clientY));
+    window.addEventListener('mousemove', e => pointerMove(e.clientX, e.clientY));
+    window.addEventListener('mouseup', pointerUp);
+    canvas.addEventListener('touchstart', e => { const t=e.touches[0]; pointerDown(t.clientX,t.clientY); }, {passive:true});
+    canvas.addEventListener('touchmove', e => { const t=e.touches[0]; pointerMove(t.clientX,t.clientY); }, {passive:true});
+    canvas.addEventListener('touchend', pointerUp);
+
+    let clock = new THREE.Clock();
+    function animate(){
+      requestAnimationFrame(animate);
+      const dt = clock.getDelta();
+      if(autoSpin) targetRotY += dt * 0.25;
+
+      currentRotY += (targetRotY - currentRotY) * 0.08;
+      currentRotX += (targetRotX - currentRotX) * 0.08;
+      dumbbell.rotation.y = currentRotY;
+      dumbbell.rotation.x = currentRotX;
+      dumbbell.position.y = Math.sin(clock.elapsedTime * 0.6) * 0.15;
+
+      particles.rotation.y += dt * 0.02;
+
+      renderer.render(scene, camera);
+    }
+
+    resize();
+    window.addEventListener('resize', resize);
+    canvas.classList.add('loaded');
+    animate();
+  })();
+</script>
+
+</body>
+</html>
