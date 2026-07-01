@@ -3,7 +3,6 @@
 A full-stack gym membership platform built with Flask — featuring a dynamic 3D landing page, complete user authentication system, membership plan gating, and a live admin dashboard powered by Anvil Works. Deployed on PythonAnywhere and live for **1+ month** with zero downtime.
 
 🔗 **Live Site: [krishnakarthik09.pythonanywhere.com](https://krishnakarthik09.pythonanywhere.com)**
-🔗 **Membership & Admin App: [natural-wavy-tank.anvil.app](https://natural-wavy-tank.anvil.app)**
 
 ---
 
@@ -139,5 +138,5 @@ The database (`gym.db`) is created automatically on first run inside an `instanc
 
 ## Built By
 
-**Krishna Karthik** — ECE Graduate, Hyderabad
+**Krishna Karthik** 
 [GitHub](https://github.com/krishnakarthik09) · [LinkedIn](https://linkedin.com/in/krishna-karthik-922b89301)
