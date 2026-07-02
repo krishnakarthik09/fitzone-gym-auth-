@@ -4,7 +4,7 @@ from flask_login import LoginManager, UserMixin, login_user, login_required, log
 from werkzeug.security import generate_password_hash, check_password_hash
 
 app = Flask(__name__)
-app.config['SECRET_KEY'] = 'change-this-later'
+app.config['SECRET_KEY'] = 'My Secrete Key'
 app.config['SQLALCHEMY_DATABASE_URI'] = 'sqlite:///gym.db'
 db = SQLAlchemy(app)
 
